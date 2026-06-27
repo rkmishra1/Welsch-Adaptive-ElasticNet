@@ -1,6 +1,6 @@
 <div align="center">
 
-# Welsch Adaptive Elastic-Net
+# Welsch Adaptive ElasticNet
 
 **Robust sparse regression via proximal Adam, tuned by robust BIC**
 
