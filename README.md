@@ -41,6 +41,17 @@ ordinary cross-validation under contamination.
 > carries through the flat regions of the non-convex loss, and it never forms or
 > inverts a Hessian.
 
+---
+
+## Fitting Pipeline
+
+<p align="center">
+  <img src="docs/figures/pipeline.png" width="820" alt="W-AdEnet fitting pipeline"/>
+  <br><em>Figure 1 — Four-stage W-AdEnet pipeline: robust initialisation → adaptive weights → RBIC grid search → proximal Adam iterations</em>
+</p>
+
+---
+
 ## Features
 
 - ⚡ **Linear-time fits** — `O(np)` per iteration, no `p × p` factorization.
@@ -49,6 +60,64 @@ ordinary cross-validation under contamination.
 - 🎯 **Exact sparsity** — closed-form elastic-net prox produces true zeros.
 - 🔧 **Outlier-resistant tuning** — RBIC over a 2-D `(λ₁, λ₂)` grid with warm starts.
 - 🧪 **Full simulation study** — reproduces the manuscript design grid end-to-end.
+
+---
+
+## Why the Welsch Loss?
+
+The key idea is the **redescending influence function**: unlike OLS (unbounded influence) or Huber (bounded but non-redescending), the Welsch loss *downweights large residuals to zero*, making it resistant to both vertical outliers and leverage points.
+
+<p align="center">
+  <img src="docs/figures/loss_influence.png" width="820" alt="Loss functions and influence functions comparison"/>
+  <br><em>Figure 2 — Left: Welsch loss stays bounded for large residuals. Right: Welsch influence function redescends to zero, providing a hard breakdown against extreme outliers.</em>
+</p>
+
+---
+
+## Penalisation & Tuning
+
+### Adaptive Regularisation Path & RBIC Surface
+
+The adaptive weights $\hat{w}_j = 1/|\tilde\beta_j|$ give heavier L1 penalty to small (likely noise) coefficients, promoting sparser solutions without over-shrinking large (true signal) coefficients. Penalties are selected by minimising the Robust BIC surface over a 2-D grid.
+
+<p align="center">
+  <img src="docs/figures/penalty_rbic.png" width="820" alt="Regularisation path and RBIC surface"/>
+  <br><em>Figure 3 — Left: Adaptive elastic-net coefficient paths (noise variables zero out early). Right: RBIC surface with the selected (λ₁*, λ₂*) marked (red star).</em>
+</p>
+
+---
+
+## Simulation Results
+
+### Performance under Leverage Contamination (δ = 10%)
+
+Comparison of W-AdEnet against OLS, standard Adaptive Elastic-Net (AdEnet), Huber-AdLasso (H-AdL), and Tukey-AdLasso (T-AdL) on the **moderate growth regime** (`p ∝ n^(2/3)`, ρ = 0.65).
+
+<p align="center">
+  <img src="docs/figures/simulation_metrics.png" width="820" alt="Simulation performance metrics"/>
+  <br><em>Figure 4 — W-AdEnet (blue) achieves the highest True Zeros (TZ ↑), fewest False Inclusions (FZ ↓), and lowest Median MSPE (↓) under leverage contamination.</em>
+</p>
+
+| Metric | Meaning | Direction |
+|:-------|:--------|:----------|
+| **TZ** | True zeros correctly excluded | higher ↑ (ceiling `p − |A|`) |
+| **FZ** | True zeros wrongly retained (false inclusions) | lower ↓ |
+| **MSPE** | Median squared prediction error on a clean test set | lower ↓ |
+
+### Design Grid
+
+Each run sweeps the design grid for one dimension regime:
+
+| Regime    | Growth          | `p` at `n = 800, 1600, 2400` |
+|:----------|:----------------|:-----------------------------|
+| Low       | `p ∝ √n`        | 108, 155, 190                |
+| Moderate  | `p ∝ n^(2/3)`   | 347, 555, 730                |
+| High      | `p ∝ n`         | 960, 1896, 2760              |
+
+Crossed with correlation `ρ ∈ {0.35, 0.65, 0.85}` and error regime
+`∈ {clean, vertical, leverage}`, at contamination fraction `δ = 0.10`.
+
+---
 
 ## Installation
 
@@ -83,7 +152,9 @@ beta = welsch_adenet(X, y, l1=0.1, l2=0.01, weights=w, sigma=sigma)
 ```
 </details>
 
-## Reproducing the simulation study
+---
+
+## Reproducing the Simulation Study
 
 ```bash
 python -m simulation.run_simulation --smoke                  # fast sanity check
@@ -92,27 +163,11 @@ python -m simulation.run_simulation --regime moderate --reps 300
 python -m simulation.run_simulation --regime high     --reps 300 --cov ar1
 ```
 
-Each run sweeps the design grid for one dimension regime and writes mean **TZ**,
-mean **FZ**, and **median MSPE** (± standard error) to `results_<regime>.csv`.
+Each run writes mean **TZ**, mean **FZ**, and **median MSPE** (± standard error) to `results_<regime>.csv`.
 
-| Regime    | Growth          | `p` at `n = 800, 1600, 2400` |
-|:----------|:----------------|:-----------------------------|
-| Low       | `p ∝ √n`        | 108, 155, 190                |
-| Moderate  | `p ∝ n^(2/3)`   | 347, 555, 730                |
-| High      | `p ∝ n`         | 960, 1896, 2760              |
+---
 
-Crossed with correlation `ρ ∈ {0.35, 0.65, 0.85}` and error regime
-`∈ {clean, vertical, leverage}`, at contamination fraction `δ = 0.10`.
-
-**Reported quantities**
-
-| Metric | Meaning | Direction |
-|:-------|:--------|:----------|
-| **TZ** | True zeros correctly excluded | higher ↑ (ceiling `p − |A|`) |
-| **FZ** | True zeros wrongly retained (false inclusions) | lower ↓ |
-| **MSPE** | Median squared prediction error on a clean test set | lower ↓ |
-
-## Project layout
+## Project Layout
 
 ```
 welsch_adenet/
@@ -125,7 +180,11 @@ simulation/
 └── run_simulation.py design-grid driver
 tests/
 └── test_estimator.py runnable self-checks
+docs/
+└── figures/          figures embedded in this README
 ```
+
+---
 
 ## Testing
 
@@ -137,7 +196,9 @@ The suite checks the Welsch gradient against finite differences, exact-zero
 support recovery on clean data, and bounded prediction error under 10% vertical
 outliers.
 
-## Notes & scope
+---
+
+## Notes & Scope
 
 - **RBIC tunes W-AdEnet only.** The competing estimators in the manuscript (AdL,
   AdEnet, H-AdL, T-AdL, S-LTS, R-LARS) follow their own tuning protocols and are
@@ -147,7 +208,9 @@ outliers.
   practical surrogate for the MM / MM-Ridge starts described in the manuscript.
 - **Loss prefactor.** The Welsch loss uses prefactor `c²` (not the `c²/2` printed
   in eq. 5.2) so that it is the exact antiderivative of the gradient used in
-  Algorithm 5.1 — see the note in [`estimator.py`](welsch_adenet/estimator.py).
+  Algorithm 5.1 — see the note in [`welsch_adenet/estimator.py`](welsch_adenet/estimator.py).
+
+---
 
 ## Citation
 
@@ -159,6 +222,8 @@ outliers.
   note   = {Manuscript}
 }
 ```
+
+---
 
 ## License
 
