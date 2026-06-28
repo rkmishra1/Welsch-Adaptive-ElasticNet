@@ -65,11 +65,19 @@ ordinary cross-validation under contamination.
 
 ## Why the Welsch Loss?
 
-The key idea is the **redescending influence function**: unlike OLS (unbounded influence) or Huber (bounded but non-redescending), the Welsch loss *downweights large residuals to zero*, making it resistant to both vertical outliers and leverage points.
+The Welsch loss is a robust loss function commonly employed in statistical learning to mitigate the impact of outliers and extreme values in heavy-tailed distributions. It is defined as:
+
+$$\mathcal{W}_{c}(r) = \frac{c^2}{2}\left[1 - \exp\left\{-\frac{r^2}{c^2}\right\}\right]$$
+
+where $r$ is the residual and $c$ is the tuning parameter controlling the threshold for downweighting. The derivative of the Welsch loss is:
+
+$$\mathcal{W}_{c}^{'}(r) = r\exp\left\{-\frac{r^2}{c^2}\right\}$$
+
+The key idea is the **redescending influence function** $\mathcal{W}_c'(r)$: unlike OLS (unbounded influence) or Huber (bounded but non-redescending), the Welsch loss *downweights large residuals to zero*, making it resistant to both vertical outliers and leverage points.
 
 <p align="center">
   <img src="docs/figures/loss_influence.png" width="820" alt="Loss functions and influence functions comparison"/>
-  <br><em>Figure 2 — Left: Welsch loss stays bounded for large residuals. Right: Welsch influence function redescends to zero, providing a hard breakdown against extreme outliers.</em>
+  <br><em>Figure 2 — Left: Welsch loss $\mathcal{W}_c(r)$ stays bounded at $c^2/2$ for large residuals. Right: influence function $\mathcal{W}_c'(r)$ redescends to zero, providing hard resistance to extreme outliers.</em>
 </p>
 
 ---
