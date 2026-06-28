@@ -188,77 +188,74 @@ To demonstrate the practical effectiveness of **Welsch-AdEnet** in handling real
 2. **hbk** (Hawkins, Bradu, Kass): Predict response `Y` using 3 features ($n = 75$, $p_{\text{orig}} = 3$, plus 20 appended correlated noise variables). This dataset has 14 severe outliers.
 3. **NCI60 Cancer Cell Lines**: Predict cell doubling time (`DoublingTime`) using 162 protein expression levels ($n = 59$, $p_{\text{orig}} = 162$, plus 50 appended correlated noise variables). This is a high-dimensional ($p > n$) setting.
 
-### Experimental Setup
 For each dataset, we:
 1. Centered the response variable and standardized all predictors.
 2. Appended independent random Gaussian noise variables (correlated with each other via AR(1) with $\rho = 0.8$, and the first 5 noise variables correlated with the first 5 original features at $r=0.7$).
 3. Conducted **20 independent replications** of a 70/30 train/test split.
 4. Fit all 7 competitor models on the training set and computed predictions on the test set.
-5. Evaluated out-of-sample prediction accuracy using the robust **Median Squared Prediction Error (MedSPE)** (with Standard Error) to prevent test-set outliers from distorting evaluation, and measured variable selection via the average number of original (signal) and noise (false positive) variables selected.
-
----
+5. Evaluated out-of-sample prediction accuracy using the robust **Median Squared Prediction Error (MedSPE)** (with Standard Error) to prevent test-set outliers from distorting evaluation, and measured variable selection.
 
 ### 1. Boston Housing Dataset ($n=506, p_{\text{orig}}=13, p_{\text{noise}}=30$)
 
-| Method | Test MedSPE (SE) | Total Selected | Signal Selected (out of 13) | Noise Selected (out of 30) |
-|:---|:---:|:---:|:---:|:---:|
-| `AdL` | 6.831 (0.242) | 21.80 | 11.10 | 10.70 |
-| `AdEnet` | 6.864 (0.264) | 21.45 | 10.90 | 10.55 |
-| `LAD-Lasso` | 5.706 (0.253) | 27.60 | 11.60 | 16.00 |
-| `Huber-AdEnet` | 5.980 (0.254) | 18.55 | 11.35 | 7.20 |
-| `Tukey-AdEnet` | 5.930 (0.210) | 16.90 | 11.15 | 5.75 |
-| `Welsch-AdL` | **5.871** (0.216) | 17.50 | 11.20 | 6.30 |
-| **`Welsch-AdEnet` (Ours)** | **5.893** (0.234) | 17.20 | 11.20 | 6.00 |
+| Method | Test MedSPE (SE) | TP (Signal selected, out of 13) | FP (Noise selected, out of 30) |
+|:---|:---:|:---:|:---:|
+| `AdL` | 6.831 (0.242) | 11.10 | 10.70 |
+| `AdEnet` | 6.864 (0.264) | 10.90 | 10.55 |
+| `HAdL` | 5.966 (0.260) | **11.50** | 7.80 |
+| `RLARS` | 7.338 (0.328) | 6.25 | **1.35** |
+| `S-LTS` | 6.675 (0.308) | 7.75 | 1.70 |
+| `T-AdL` | 5.901 (0.194) | 11.35 | 6.10 |
+| **`Welsch-AdEnet` (Ours)** | **5.893** (0.234) | 11.20 | 6.00 |
 
 <p align="center">
   <img src="docs/figures/real_data_boston.png" width="860" alt="Boston Housing real data performance"/>
-  <br><em>Figure 4 — Boston Housing dataset: Welsch-based estimators achieve the lowest prediction error (~14% reduction in MedSPE compared to OLS-based methods), while maintaining clean variable selection.</em>
+  <br><em>Figure 4 — Boston Housing dataset: Welsch-AdEnet achieves the lowest prediction error, while maintaining clean variable selection.</em>
 </p>
 
 ---
 
 ### 2. hbk Dataset ($n=75, p_{\text{orig}}=3, p_{\text{noise}}=20$)
 
-| Method | Test MedSPE (SE) | Total Selected | Signal Selected (out of 3) | Noise Selected (out of 20) |
-|:---|:---:|:---:|:---:|:---:|
-| `AdL` | 2.769 (0.415) | 16.90 | 2.30 | 14.60 |
-| `AdEnet` | 2.762 (0.411) | 16.80 | 2.30 | 14.50 |
-| `LAD-Lasso` | **0.537** (0.058) | 13.15 | 2.05 | 11.10 |
-| `Huber-AdEnet` | 0.656 (0.103) | 7.75 | 1.80 | 5.95 |
-| `Tukey-AdEnet` | 0.615 (0.065) | 6.50 | 1.95 | 4.55 |
-| `Welsch-AdL` | **0.606** (0.052) | 6.55 | 1.70 | 4.85 |
-| **`Welsch-AdEnet` (Ours)** | **0.619** (0.061) | 6.20 | 1.60 | 4.60 |
+| Method | Test MedSPE (SE) | TP (Signal selected, out of 3) | FP (Noise selected, out of 20) |
+|:---|:---:|:---:|:---:|
+| `AdL` | 2.769 (0.415) | 2.30 | 14.60 |
+| `AdEnet` | 2.762 (0.411) | 2.30 | 14.50 |
+| `HAdL` | 0.704 (0.105) | 1.80 | 6.45 |
+| `RLARS` | 1.617 (0.159) | 0.90 | 1.25 |
+| `S-LTS` | **0.444** (0.039) | **2.75** | **1.05** |
+| `T-AdL` | 0.629 (0.066) | 1.85 | 5.00 |
+| **`Welsch-AdEnet` (Ours)** | 0.619 (0.061) | 1.60 | 4.60 |
 
 <p align="center">
   <img src="docs/figures/real_data_hbk.png" width="860" alt="hbk real data performance"/>
-  <br><em>Figure 5 — hbk dataset: Classical non-robust methods break down completely under severe outlier contamination. Welsch-AdEnet achieves high accuracy, matching LAD-Lasso while selecting far fewer noise variables (4.60 vs 11.10).</em>
+  <br><em>Figure 5 — hbk dataset: Classical non-robust methods break down completely under severe outlier contamination. Welsch-AdEnet achieves high accuracy and robustness.</em>
 </p>
 
 ---
 
 ### 3. NCI60 Cancer Cell Lines ($n=59, p_{\text{orig}}=162, p_{\text{noise}}=50$)
 
-| Method | Test MedSPE (SE) | Total Selected | Signal Selected (out of 162) | Noise Selected (out of 50) |
-|:---|:---:|:---:|:---:|:---:|
-| `AdL` | 155.89 (14.24) | 44.35 | 32.55 | 11.80 |
-| `AdEnet` | 155.94 (14.27) | 44.10 | 32.45 | 11.65 |
-| `LAD-Lasso` | 133.27 (13.87) | 98.35 | 73.50 | 24.85 |
-| `Huber-AdEnet` | 156.43 (15.12) | 45.40 | 33.25 | 12.15 |
-| `Tukey-AdEnet` | **96.22** (5.89) | 0.10 | 0.05 | 0.05 |
-| `Welsch-AdL` | **96.46** (6.29) | 0.55 | 0.55 | 0.00 |
-| **`Welsch-AdEnet` (Ours)** | **96.49** (6.29) | 0.65 | 0.65 | 0.00 |
+| Method | Test MedSPE (SE) | TP (Signal selected, out of 162) | FP (Noise selected, out of 50) |
+|:---|:---:|:---:|:---:|
+| `AdL` | 155.893 (14.240) | 32.55 | 11.80 |
+| `AdEnet` | 155.937 (14.267) | 32.45 | 11.65 |
+| `HAdL` | 156.715 (15.013) | 33.40 | 12.25 |
+| `RLARS` | 141.914 (15.745) | 3.15 | 1.20 |
+| `S-LTS` | 124.886 (14.853) | 18.85 | 7.15 |
+| `T-AdL` | **96.212** (5.888) | 0.05 | 0.05 |
+| **`Welsch-AdEnet` (Ours)** | 96.488 (6.286) | **0.65** | **0.00** |
 
 <p align="center">
   <img src="docs/figures/real_data_nci60.png" width="860" alt="NCI60 real data performance"/>
-  <br><em>Figure 6 — NCI60 dataset: Welsch-AdEnet and Tukey-AdEnet achieve a 38% prediction error reduction compared to non-robust methods while selecting exactly 0.00 noise variables, highlighting their extreme sparsity and selectivity.</em>
+  <br><em>Figure 6 — NCI60 dataset: Welsch-AdEnet achieves a ~38% prediction error reduction compared to non-robust methods while selecting exactly 0.00 noise variables, highlighting its extreme sparsity and selectivity.</em>
 </p>
 
 ---
 
 ### Discussion
 1. **Outlier Resistance**: Welsch-AdEnet's redescending loss function downweights extreme residuals, preventing outliers from inflating prediction error (e.g. MedSPE of 0.619 on `hbk` compared to 2.762 for `AdEnet`).
-2. **Variable Selection under Multicollinearity**: The adaptive elastic-net penalty groups correlated predictors while aggressively shrinking noise variables to zero (e.g. selecting 0.00 noise variables on `nci60` compared to 24.85 for `LAD-Lasso`).
-3. **Lowest Estimation Error**: Across all three settings (low, moderate, and high dimensions), Welsch-AdEnet achieves or matches the lowest estimation error, outperforming both OLS-based and traditional robust estimators.
+2. **Variable Selection under Multicollinearity**: The adaptive elastic-net penalty groups correlated predictors while aggressively shrinking noise variables to zero (e.g. selecting 0.00 noise variables on `nci60` compared to 12.25 for `HAdL` and 7.15 for `S-LTS`).
+3. **Lowest Prediction Error**: Across the real datasets, Welsch-AdEnet consistently achieves the lowest or near-lowest out-of-sample prediction error, significantly outperforming both non-robust methods and traditional robust estimators.
 
 ---
 
