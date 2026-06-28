@@ -2,7 +2,8 @@
 # scripts/real_data_analysis.py
 
 import os
-import time
+import subprocess
+import tempfile
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -70,7 +71,7 @@ def run_dataset_benchmark(X_orig, y_orig, p_noise, B=20, dataset_name=""):
     print(f"Benchmarking Dataset: {dataset_name} (n = {X_orig.shape[0]}, p_orig = {X_orig.shape[1]}, p_noise = {p_noise})")
     print(f"==================================================")
     
-    methods = ["AdL", "AdEnet", "LAD-Lasso", "Huber-AdEnet", "Tukey-AdEnet", "Welsch-AdL", "Welsch-AdEnet"]
+    methods = ["AdL", "AdEnet", "HAdL", "T-AdL", "S-LTS", "RLARS", "Welsch-AdEnet"]
     results_list = []
     
     p_orig = X_orig.shape[1]
@@ -87,41 +88,67 @@ def run_dataset_benchmark(X_orig, y_orig, p_noise, B=20, dataset_name=""):
         # Split and preprocess
         split_data = prepare_train_test(X_full, y_orig, train_prop=0.70)
         
-        for m in methods:
-            # Configure method parameters
-            loss_type = "squared"
-            loss_param = None
-            n_l2 = 5
+        # Run S-LTS and R-LARS in R via helper script
+        beta_s_lts = np.zeros(p_total)
+        beta_rlars = np.zeros(p_total)
+        
+        with tempfile.TemporaryDirectory() as temp_dir:
+            train_x_file = os.path.join(temp_dir, "train_x.csv")
+            train_y_file = os.path.join(temp_dir, "train_y.csv")
+            test_x_file = os.path.join(temp_dir, "test_x.csv")
+            out_file = os.path.join(temp_dir, "out.csv")
             
-            if m == "AdL":
-                loss_type = "squared"
-                n_l2 = 1  # L2 = 0 only
-            elif m == "AdEnet":
-                loss_type = "squared"
-            elif m == "LAD-Lasso":
-                loss_type = "absolute"
-                n_l2 = 1  # L2 = 0 only
-            elif m == "Huber-AdEnet":
-                loss_type = "huber"
-                loss_param = 1.345
-            elif m == "Tukey-AdEnet":
-                loss_type = "tukey"
-                loss_param = 4.685
-            elif m == "Welsch-AdL":
-                loss_type = "welsch"
-                loss_param = 2.11
-                n_l2 = 1  # L2 = 0 only
-            elif m == "Welsch-AdEnet":
-                loss_type = "welsch"
-                loss_param = 2.11
-                
+            np.savetxt(train_x_file, split_data["X_train"], delimiter=",")
+            np.savetxt(train_y_file, split_data["y_train"], delimiter=",")
+            np.savetxt(test_x_file, split_data["X_test"], delimiter=",")
+            
+            cmd = [
+                "Rscript", "/Users/ramakrushnamishra/welsch-adenet/scripts/fit_r_competitors.R",
+                train_x_file, train_y_file, test_x_file, out_file
+            ]
             try:
-                res = tune_competitor(
-                    split_data["X_train"], split_data["y_train"],
-                    loss_type=loss_type, loss_param=loss_param,
-                    n_l1=12, n_l2=n_l2, max_iter=800
-                )
-                beta_hat = res["beta"]
+                subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+                r_coefs = pd.read_csv(out_file)
+                beta_s_lts = r_coefs["S_LTS"].values
+                beta_rlars = r_coefs["RLARS"].values
+            except Exception as re:
+                print(f"    R helper failed in rep {b}: {str(re)}")
+        
+        for m in methods:
+            try:
+                if m == "S-LTS":
+                    beta_hat = beta_s_lts.copy()
+                elif m == "RLARS":
+                    beta_hat = beta_rlars.copy()
+                else:
+                    # Configure method parameters for Python solver
+                    loss_type = "squared"
+                    loss_param = None
+                    n_l2 = 5
+                    
+                    if m == "AdL":
+                        loss_type = "squared"
+                        n_l2 = 1  # L2 = 0 only
+                    elif m == "AdEnet":
+                        loss_type = "squared"
+                    elif m == "HAdL":
+                        loss_type = "huber"
+                        loss_param = 1.345
+                        n_l2 = 1  # L2 = 0 only
+                    elif m == "T-AdL":
+                        loss_type = "tukey"
+                        loss_param = 4.685
+                        n_l2 = 1  # L2 = 0 only
+                    elif m == "Welsch-AdEnet":
+                        loss_type = "welsch"
+                        loss_param = 2.11
+                        
+                    res = tune_competitor(
+                        split_data["X_train"], split_data["y_train"],
+                        loss_type=loss_type, loss_param=loss_param,
+                        n_l1=12, n_l2=n_l2, max_iter=800
+                    )
+                    beta_hat = res["beta"]
                 
                 # Predict and compute errors
                 preds = split_data["X_test"] @ beta_hat
@@ -202,7 +229,7 @@ pd.concat([boston_res["raw"], hbk_res["raw"], nci_res["raw"]]).to_csv(
 # Plotting Function
 def plot_dataset_results(dataset_name, res_dict, file_name):
     summary = res_dict["summary"]
-    methods = ["AdL", "AdEnet", "LAD-Lasso", "Huber-AdEnet", "Tukey-AdEnet", "Welsch-AdL", "Welsch-AdEnet"]
+    methods = ["AdL", "AdEnet", "HAdL", "T-AdL", "S-LTS", "RLARS", "Welsch-AdEnet"]
     summary["Method"] = pd.Categorical(summary["Method"], categories=methods, ordered=True)
     summary = summary.sort_values("Method")
     
