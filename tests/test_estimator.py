@@ -41,8 +41,22 @@ def test_robust_under_outliers():
     assert np.median(resid ** 2) < 10.0
 
 
+def test_competitors():
+    # test that we can fit each competitor and get coefficients
+    rng = np.random.default_rng(42)
+    d = make_dataset(n=100, p=10, rho=0.5, error="clean", rng=rng)
+    X, y = d["X"], d["y"]
+    
+    from welsch_adenet import fit_competitor, tune_competitor
+    for loss in ["squared", "absolute", "huber", "tukey", "welsch"]:
+        res = tune_competitor(X, y, loss_type=loss, n_l1=5, n_l2=2)
+        assert res["beta"] is not None
+        assert len(res["beta"]) == 10
+
+
 if __name__ == "__main__":
     test_welsch_derivative()
     test_exact_zeros_and_recovery()
     test_robust_under_outliers()
+    test_competitors()
     print("all checks passed")
