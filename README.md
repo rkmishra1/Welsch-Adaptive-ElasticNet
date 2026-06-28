@@ -67,11 +67,11 @@ ordinary cross-validation under contamination.
 
 The Welsch loss is a robust loss function commonly employed in statistical learning to mitigate the impact of outliers and extreme values in heavy-tailed distributions. It is defined as:
 
-$$\mathcal{W}_{c}(r) = \frac{c^2}{2}\left[1 - \exp\!\left(-\frac{r^2}{c^2}\right)\right]$$
+$$\mathcal{W}_{c}(r) = \frac{c^2}{2}\left[1 - \exp\left(-\frac{r^2}{c^2}\right)\right]$$
 
 where $r$ is the residual and $c$ is the tuning parameter controlling the threshold for downweighting. The derivative of the Welsch loss is:
 
-$$\mathcal{W}_{c}^{'}(r) = r\exp\!\left(-\frac{r^2}{c^2}\right)$$
+$$\mathcal{W}_{c}^{'}(r) = r\exp\left(-\frac{r^2}{c^2}\right)$$
 
 The key idea is the **redescending influence function** $\mathcal{W}_c'(r)$: unlike OLS (unbounded influence) or Huber (bounded but non-redescending), the Welsch loss *downweights large residuals to zero*, making it resistant to both vertical outliers and leverage points.
 
