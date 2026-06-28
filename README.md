@@ -80,6 +80,13 @@ The key idea is the **redescending influence function** $\mathcal{W}_c'(r)$: unl
   <br><em>Figure 2 — Left: Welsch loss $\mathcal{W}_c(r)$ stays bounded at $c^2/2$ for large residuals. Right: influence function $\mathcal{W}_c'(r)$ redescends to zero, providing hard resistance to extreme outliers.</em>
 </p>
 
+The figure below shows the full Welsch family — loss, first derivative (influence), and second derivative — illustrating the non-convex curvature that motivates proximal Adam over Newton-type solvers:
+
+<p align="center">
+  <img src="docs/figures/welsch_family.png" width="700" alt="Welsch family: loss, first and second derivative"/>
+  <br><em>Figure 3 — Welsch family of functions $(c=3)$. The first derivative $\mathcal{W}_c'(r)$ redescends to zero for large residuals; the second derivative $\mathcal{W}_c''(r) = e^{-r^2/c^2}(1 - 2r^2/c^2)$ changes sign, confirming non-convexity.</em>
+</p>
+
 ---
 
 ## Penalisation & Tuning
