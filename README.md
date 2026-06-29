@@ -257,7 +257,25 @@ For each dataset, we:
 2. **Variable Selection under Multicollinearity**: The adaptive elastic-net penalty groups correlated predictors while aggressively shrinking noise variables to zero (e.g. selecting 0.00 noise variables on `nci60` compared to 13.75 for `HAdL` and 7.40 for `S-LTS`).
 3. **Lowest Prediction Error**: Across the real datasets, Welsch-AdEnet consistently achieves the lowest out-of-sample prediction error, outperforming both non-robust methods and traditional robust estimators by significant margins.
 
----mple prediction error, significantly outperforming both non-robust methods and traditional robust estimators.
+---
+
+### Statistical Significance and Clique Structure
+To assess whether the predictive differences between the estimators are statistically significant across the datasets, we performed a Friedman test on the paired MedSPE values across all 60 replication instances (3 datasets $\times$ 20 replications). The Friedman test statistic is $F = 106.6226$ ($p = 1.0377 \times 10^{-20}$), showing highly significant differences. A Nemenyi post-hoc test was conducted at $\alpha = 0.05$ to compute the Critical Difference ($CD = 1.196$).
+
+<p align="center">
+  <img src="docs/figures/cd_diagram.png" width="720" alt="Nemenyi Critical Difference Diagram"/>
+  <br><em>Figure 7 — Critical Difference (CD) diagram from the Nemenyi post-hoc test. Welsch-AdEnet achieves the best rank (1.15) and is statistically significantly superior to all other estimators.</em>
+</p>
+
+---
+
+### Parameter Sensitivity Analysis
+A sensitivity analysis was conducted on the Boston Housing dataset to evaluate the effect of the Welsch tuning constant $c \in [0.5, 10.0]$ on out-of-sample prediction and variable selection performance.
+
+<p align="center">
+  <img src="docs/figures/sensitivity_analysis.png" width="860" alt="Welsch Tuning Constant Sensitivity Analysis"/>
+  <br><em>Figure 8 — Sensitivity analysis of the Welsch tuning constant $c$: median out-of-sample MedSPE (left) and average TP and FP selection counts (right). The optimal region is $c \in [1.5, 2.5]$, confirming $c=2.11$ as a stable parameter choice.</em>
+</p>
 
 ---
 
