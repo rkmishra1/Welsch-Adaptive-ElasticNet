@@ -24,7 +24,7 @@ loss** with an **adaptive elastic-net penalty** and is fit by a first-order
 **proximal Adam** scheme that scales linearly in the data, `O(np)` per iteration.
 
 $$
-\hat\beta = \arg\min_{\beta}\ \underbrace{\sum_{i=1}^{n}\mathcal{W}_c\left(\frac{y_i-\mathbf{x}_i^{\top}\beta}{\hat\sigma}\right)}_{\text{robust, non-convex data term}}\ +\ \underbrace{\sum_{j=1}^{p}\left(\hat w_j\,\lambda_1|\beta_j|+\tfrac{\lambda_2}{2}\beta_j^{2}\right)}_{\text{convex elastic-net penalty}}
+\hat\beta = \arg\min_{\beta}\ \underbrace{\sum_{i=1}^{n}\mathcal{W}_c\left(\frac{y_i-\mathbf{x}_i^{\top}\beta}{\hat\sigma}\right)}_{\text{robust, non-convex data term}}\ +\ \underbrace{\sum_{j=1}^{p}\left(\hat w_j\lambda_1|\beta_j|+\tfrac{\lambda_2}{2}\beta_j^{2}\right)}_{\text{convex elastic-net penalty}}
 $$
 
 Each iteration takes an Adam gradient step on the smooth Welsch term and applies
