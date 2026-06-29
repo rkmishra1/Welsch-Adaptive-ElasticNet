@@ -77,7 +77,7 @@ The key idea is the **redescending influence function** $\mathcal{W}_c'(r)$: unl
 
 <p align="center">
   <img src="docs/figures/loss_influence.png" width="820" alt="Loss functions and influence functions comparison"/>
-  <br><em>Figure 2 — Left: Welsch loss $\mathcal{W}_c(r)$ stays bounded at $c^2/2$ for large residuals. Right: influence function $\mathcal{W}_c'(r)$ redescends to zero, providing hard resistance to extreme outliers.</em>
+  <br><em>Figure 2 — Left: Welsch loss $\mathcal{W}_{c}(r)$ stays bounded at $c^{2}/2$ for large residuals. Right: influence function $\mathcal{W}_{c}^{'}(r)$ redescends to zero, providing hard resistance to extreme outliers.</em>
 </p>
 
 The figure below shows the full Welsch family — loss, first derivative (influence), and second derivative — illustrating the non-convex curvature that motivates proximal Adam over Newton-type solvers:
