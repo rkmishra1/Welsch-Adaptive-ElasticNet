@@ -273,7 +273,7 @@ To assess whether the predictive differences between the estimators are statisti
 A sensitivity analysis was conducted on the Boston Housing dataset to evaluate the effect of the Welsch tuning constant $c \in [0.5, 10.0]$ on out-of-sample prediction and variable selection performance.
 
 <p align="center">
-  <img src="docs/figures/sensitivity_analysis.png" width="860" alt="Welsch Tuning Constant Sensitivity Analysis"/>
+  <img src="docs/figures/sensitivity_analysis_combined.png" width="860" alt="Welsch Tuning Constant Sensitivity Analysis"/>
   <br><em>Figure 8 — Sensitivity analysis of the Welsch tuning constant $c$: median out-of-sample MedSPE (left) and average TP and FP selection counts (right). The optimal region is $c \in [1.5, 2.5]$, confirming $c=2.11$ as a stable parameter choice.</em>
 </p>
 
