@@ -23,7 +23,7 @@ estimator is solved by a first-order **proximal Adam** scheme and its
 penalties are tuned by a **robust Bayesian information criterion (RBIC)**:
 
 $$
-\hat\beta = \arg\min_{\beta}\ \sum_{i=1}^{n}\mathcal{W}_c\!\left(\frac{y_i-\mathbf{x}_i^{\top}\beta}{\hat\sigma}\right)\ +\ \sum_{j=1}^{p}\left(\hat w_j\lambda_1|\beta_j|+\tfrac{\lambda_2}{2}\beta_j^{2}\right)
+\hat\beta = \arg\min_{\beta}\ \sum_{i=1}^{n}\mathcal{W}_c\left(\frac{y_i-\mathbf{x}_i^{\top}\beta}{\hat\sigma}\right)\ +\ \sum_{j=1}^{p}\left(\hat w_j\lambda_1|\beta_j|+\tfrac{\lambda_2}{2}\beta_j^{2}\right)
 $$
 
 The Welsch term downweights large residuals to zero, giving resistance to
