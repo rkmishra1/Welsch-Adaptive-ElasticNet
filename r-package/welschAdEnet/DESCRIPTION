@@ -1,0 +1,30 @@
+Package: welschAdEnet
+Type: Package
+Title: Welsch Adaptive Elastic-Net for Robust Sparse Regression
+Version: 0.1.0
+Authors@R: person("R. K.", "Mishra", email = "rkmishra.stat@gmail.com",
+    role = c("aut", "cre"))
+Description: Fits a high-breakdown estimator for sparse linear regression
+    that couples a redescending Welsch loss with an adaptive elastic-net
+    penalty, solved by a first-order proximal Adam scheme and tuned by a
+    robust Bayesian information criterion. The Welsch loss downweights
+    large residuals to zero, giving resistance to both vertical outliers
+    and high-leverage points, while the adaptive elastic-net penalty
+    produces exact variable selection and grouped shrinkage of correlated
+    predictors. Also includes several competing penalized robust-regression
+    losses (squared, absolute, Huber, Tukey) fit with the same solver, and
+    tools for reproducing a simulation study under vertical-outlier and
+    leverage contamination regimes. Methods are described in Mishra (2026,
+    manuscript in preparation).
+License: MIT + file LICENSE
+URL: https://github.com/rkmishra1/welsch-adaptive-elasticnet
+BugReports: https://github.com/rkmishra1/welsch-adaptive-elasticnet/issues
+Encoding: UTF-8
+Depends: R (>= 3.6)
+Imports:
+    MASS,
+    stats
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+RoxygenNote: 7.3.1
