@@ -15,6 +15,26 @@
 
 ---
 
+## Contents
+
+- [Overview](#overview)
+- [Fitting Pipeline](#fitting-pipeline)
+- [Features](#features)
+- [Why the Welsch Loss?](#why-the-welsch-loss)
+- [Penalisation & Tuning](#penalisation--tuning)
+- [Simulation Results](#simulation-results)
+- [Installation](#installation)
+- [Quickstart](#quickstart)
+- [Reproducing the Simulation Study](#reproducing-the-simulation-study)
+- [Real Data Analysis](#real-data-analysis)
+- [Project Layout](#project-layout)
+- [Testing](#testing)
+- [Notes & Scope](#notes--scope)
+- [Citation](#citation)
+- [License](#license)
+
+---
+
 ## Overview
 
 The **Welsch Adaptive Elastic-Net (W-AdEnet)** is a high-breakdown estimator for
@@ -97,7 +117,7 @@ The adaptive weights $\hat{w}_j = 1/|\tilde\beta_j|$ give heavier L1 penalty to 
 
 <p align="center">
   <img src="docs/figures/penalty_rbic.png" width="820" alt="Regularisation path and RBIC surface"/>
-  <br><em>Figure 3 — Left: Adaptive elastic-net coefficient paths (noise variables zero out early). Right: RBIC surface with the selected (λ₁*, λ₂*) marked (red star).</em>
+  <br><em>Figure 4 — Left: Adaptive elastic-net coefficient paths (noise variables zero out early). Right: RBIC surface with the selected (λ₁*, λ₂*) marked (red star).</em>
 </p>
 
 ---
@@ -110,7 +130,7 @@ Comparison of W-AdEnet against OLS, standard Adaptive Elastic-Net (AdEnet), Hube
 
 <p align="center">
   <img src="docs/figures/simulation_metrics.png" width="820" alt="Simulation performance metrics"/>
-  <br><em>Figure 4 — W-AdEnet (blue) achieves the highest True Zeros (TZ ↑), fewest False Inclusions (FZ ↓), and lowest Median MSPE (↓) under leverage contamination.</em>
+  <br><em>Figure 5 — W-AdEnet (blue) achieves the highest True Zeros (TZ ↑), fewest False Inclusions (FZ ↓), and lowest Median MSPE (↓) under leverage contamination.</em>
 </p>
 
 | Metric | Meaning | Direction |
@@ -167,7 +187,12 @@ beta = welsch_adenet(X, y, l1=0.1, l2=0.01, weights=w, sigma=sigma)
 ```
 </details>
 
+> [!TIP]
+> **R users:** an R port with the same estimator, RBIC tuning, and simulation
+> utilities is available in [`r-package/welschAdEnet`](r-package/welschAdEnet).
+
 ---
+
 ## Reproducing the Simulation Study
 
 ```bash
@@ -209,7 +234,7 @@ For each dataset, we:
 
 <p align="center">
   <img src="docs/figures/real_data_boston.png" width="860" alt="Boston Housing real data performance"/>
-  <br><em>Figure 4 — Boston Housing dataset: Welsch-AdEnet achieves the lowest prediction error and the highest variable selection accuracy.</em>
+  <br><em>Figure 6 — Boston Housing dataset: Welsch-AdEnet achieves the lowest prediction error and the highest variable selection accuracy.</em>
 </p>
 
 ---
@@ -228,7 +253,7 @@ For each dataset, we:
 
 <p align="center">
   <img src="docs/figures/real_data_hbk.png" width="860" alt="hbk real data performance"/>
-  <br><em>Figure 5 — hbk dataset: Classical non-robust methods break down completely under severe outlier contamination. Welsch-AdEnet achieves the highest accuracy and robustness.</em>
+  <br><em>Figure 7 — hbk dataset: Classical non-robust methods break down completely under severe outlier contamination. Welsch-AdEnet achieves the highest accuracy and robustness.</em>
 </p>
 
 ---
@@ -247,7 +272,7 @@ For each dataset, we:
 
 <p align="center">
   <img src="docs/figures/real_data_nci60.png" width="860" alt="NCI60 real data performance"/>
-  <br><em>Figure 6 — NCI60 dataset: Welsch-AdEnet achieves the lowest prediction error and the highest variable selection accuracy.</em>
+  <br><em>Figure 8 — NCI60 dataset: Welsch-AdEnet achieves the lowest prediction error and the highest variable selection accuracy.</em>
 </p>
 
 ---
@@ -264,7 +289,7 @@ To assess whether the predictive differences between the estimators are statisti
 
 <p align="center">
   <img src="docs/figures/cd_diagram.png" width="720" alt="Nemenyi Critical Difference Diagram"/>
-  <br><em>Figure 7 — Critical Difference (CD) diagram from the Nemenyi post-hoc test. Welsch-AdEnet achieves the best rank (1.15) and is statistically significantly superior to all other estimators.</em>
+  <br><em>Figure 9 — Critical Difference (CD) diagram from the Nemenyi post-hoc test. Welsch-AdEnet achieves the best rank (1.15) and is statistically significantly superior to all other estimators.</em>
 </p>
 
 ---
@@ -274,43 +299,8 @@ A sensitivity analysis was conducted on the Boston Housing dataset to evaluate t
 
 <p align="center">
   <img src="docs/figures/sensitivity_analysis_combined.png" width="860" alt="Welsch Tuning Constant Sensitivity Analysis"/>
-  <br><em>Figure 8 — Sensitivity analysis of the Welsch tuning constant $c$: median out-of-sample MedSPE (left) and average TP and FP selection counts (right). The optimal region is $c \in [1.5, 2.5]$, confirming $c=2.11$ as a stable parameter choice.</em>
+  <br><em>Figure 10 — Sensitivity analysis of the Welsch tuning constant $c$: median out-of-sample MedSPE (left) and average TP and FP selection counts (right). The optimal region is $c \in [1.5, 2.5]$, confirming $c=2.11$ as a stable parameter choice.</em>
 </p>
-
----
-
-## Installation
-
-```bash
-git clone https://github.com/rkmishra1/welsch-adenet-python.git
-cd welsch-adenet-python
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-```
-
-## Quickstart
-
-```python
-from welsch_adenet import fit_rbic
-
-# X : (n, p) design,  y : (n,) response
-res = fit_rbic(X, y)          # robust init → adaptive weights → RBIC grid search
-
-beta_hat = res["beta"]                       # rescaled (1 + λ₂/n) estimate
-print(res["lambda1"], res["lambda2"], res["rbic"])
-```
-
-<details>
-<summary><b>Single fit at fixed penalties (Algorithm 5.1 directly)</b></summary>
-
-```python
-from welsch_adenet import welsch_adenet, robust_init, adaptive_weights
-
-beta0, sigma = robust_init(X, y)             # MM-like warm start + MAD scale
-w = adaptive_weights(beta0)                  # ŵ_j = 1 / |β̃_j|
-beta = welsch_adenet(X, y, l1=0.1, l2=0.01, weights=w, sigma=sigma)
-```
-</details>
 
 ---
 
@@ -327,6 +317,8 @@ simulation/
 └── run_simulation.py design-grid driver
 tests/
 └── test_estimator.py runnable self-checks
+r-package/
+└── welschAdEnet/     R port of the estimator, tuning, and simulation utilities
 docs/
 └── figures/          figures embedded in this README
 ```
